@@ -1,0 +1,53 @@
+apiversion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: backend-pipeline
+spec:
+  workspaces:
+    - name: shared-workspace
+  params:
+    - name: git-url
+      type: string
+    - name: image
+      type: string
+  tasks:
+    - name: clone-source
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: deleteExisting
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+          
+  - name: build
+    runAfter: ["clone-source"]
+    taskRef:
+      name: maven-build
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+
+  - name: build-image
+    runAfter: ["build"]
+    taskRef:
+      name: build-image
+    params:
+      - name: image
+        value: $(params.image)
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+
+  - name: deploy
+    runAfter: ["build-image"]
+    taskRef:
+      name: deploy-ocp
+    params:
+      - name: image
+        value: $(params.image)
+  
