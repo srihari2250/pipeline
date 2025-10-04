@@ -1,0 +1,23 @@
+apiversion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: backend-pipelinerun
+spec:
+  pipelineRef:
+    name: backend-pipeline
+  params:
+    - name: git-url
+      value: "https://github.com/srihari2250/backend.git"
+    - name: image
+      value: "image-registry.openshift-image-registry.svc:5000/tekton-java-demo/backend:latest"
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        metadata:
+          name: workspace-pvc
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
