@@ -1,0 +1,14 @@
+apiversion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: maven-build
+spec:
+  workspace:
+    - name: source
+  steps:
+    - name: mvn-build
+      image: maven:3.8.5-openjdk-17
+      script: |
+        #!/bin/bash
+        cd $(workspaces.source.path)
+        mvn clean package -DskipTests
